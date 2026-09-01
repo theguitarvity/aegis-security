@@ -31,11 +31,14 @@ Before any assessment action, do this in order:
 4. Run `scripts/doctor.py` and record available/unavailable tools.
 5. Run discovery through `scripts/scan.py` or the core `discover` command
    before making claims about the platform.
-6. Choose the least aggressive profile that satisfies the user request.
+6. Read every `knowledge/*.md` reference that matches discovered platform
+   evidence or the requested assessment area. For broad assessments, read all
+   `knowledge/*.md` files before interpretation.
+7. Choose the least aggressive profile that satisfies the user request.
    Default to `quick`.
-7. If the chosen profile is `adversarial-local`, `resilience`, or `full`,
+8. If the chosen profile is `adversarial-local`, `resilience`, or `full`,
    require explicit target, explicit authorization, and bounded execution.
-8. If target validation denies the target, stop. Do not work around it.
+9. If target validation denies the target, stop. Do not work around it.
 
 ## Deterministic-First Rule
 
@@ -105,6 +108,28 @@ For the full procedure, read
 `references/assessment-protocol.md` before assessing a real project. That
 reference is mandatory for any task that asks to analyze, assess, scan, audit,
 test, score, gate, or generate a security roadmap.
+
+Knowledge references are also mandatory for interpretation:
+
+- `knowledge/authentication.md` for login, session, token, reset, MFA, API key,
+  service identity, OAuth/OIDC/SAML, or machine-to-machine flows.
+- `knowledge/authorization.md` for roles, policies, tenants, ownership,
+  object/function access, admin operations, and privileged actions.
+- `knowledge/secrets-management.md` for secrets in repo, CI/CD, logs,
+  containers, examples, or artifacts.
+- `knowledge/supply-chain.md` for dependencies, SBOM, lockfiles, CI/CD,
+  registries, provenance, and release integrity.
+- `knowledge/containers.md` for Docker, Compose, Kubernetes, Helm, and runtime
+  manifests.
+- `knowledge/cryptography.md` for encryption, hashing, signatures, TLS, random
+  values, and key management.
+- `knowledge/secure-design.md` and `knowledge/threat-modeling.md` for
+  architecture-level findings and threat models.
+- `knowledge/resilience.md` for load, stress, failure injection, retries,
+  timeouts, rate limits, and graceful degradation.
+- `knowledge/owasp-top-10.md`, `knowledge/owasp-api-top-10.md`,
+  `knowledge/cwe.md`, `knowledge/cvss.md`, and `knowledge/stride.md` for
+  classification, never as standalone evidence.
 
 ## Invocation
 
