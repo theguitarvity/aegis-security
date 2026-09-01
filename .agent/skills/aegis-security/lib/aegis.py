@@ -112,12 +112,17 @@ def discover(project: Path) -> dict:
         "package.json": ("JavaScript/TypeScript", "npm"),
         "pnpm-lock.yaml": ("JavaScript/TypeScript", "pnpm"),
         "yarn.lock": ("JavaScript/TypeScript", "yarn"),
+        "tsconfig.json": ("TypeScript", "npm"),
         "pyproject.toml": ("Python", "pip/uv/poetry"),
         "requirements.txt": ("Python", "pip"),
+        "setup.py": ("Python", "pip"),
+        "Pipfile": ("Python", "pipenv"),
         "go.mod": ("Go", "go"),
         "Cargo.toml": ("Rust", "cargo"),
         "pom.xml": ("Java", "maven"),
         "build.gradle": ("Java/Kotlin", "gradle"),
+        "Gemfile": ("Ruby", "bundler"),
+        "composer.json": ("PHP", "composer"),
     }
     for marker, (language, manager) in markers.items():
         if marker in names:
@@ -127,15 +132,48 @@ def discover(project: Path) -> dict:
         try:
             pkg = read_json(project / "package.json")
             deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
-            for framework in ("react", "next", "vue", "express", "nestjs", "fastify"):
-                if framework in deps or f"@{framework}/core" in deps:
+            framework_deps = {
+                "react": ("react",),
+                "next.js": ("next",),
+                "vue": ("vue",),
+                "express": ("express",),
+                "nestjs": ("@nestjs/core",),
+                "fastify": ("fastify",),
+                "apollo/graphql": ("@apollo/server", "apollo-server", "graphql-yoga", "graphql"),
+                "socket.io": ("socket.io", "ws"),
+            }
+            for framework, candidates in framework_deps.items():
+                if any(candidate in deps for candidate in candidates):
                     app["frameworks"].append(framework)
         except Exception:
             pass
+    text_markers = {
+        "Django": ("manage.py",),
+        "Rails": ("config/routes.rb",),
+        "Spring": ("src/main/resources/application.yml", "src/main/resources/application.properties"),
+    }
+    for framework, candidates in text_markers.items():
+        if any(candidate in names for candidate in candidates):
+            app["frameworks"].append(framework)
+    for f in files:
+        if f.endswith(".csproj") or f.endswith(".sln"):
+            app["languages"].append(".NET")
+            app["package_managers"].append("nuget")
+        if f.endswith(".proto"):
+            app["interfaces"].append(f)
+        if f.endswith(".graphql") or Path(f).name.lower() == "schema.graphql":
+            app["interfaces"].append(f)
     for f in files:
         name = Path(f).name.lower()
         if name in {"application.yml", "application.yaml", "application.properties", ".env.example"}:
             app["interfaces"].append(f)
+        if re.search(r"(openapi|swagger).*\.(ya?ml|json)$", f, re.I):
+            app["interfaces"].append(f)
+        if any(part in f.lower() for part in ("auth", "session", "jwt", "oauth", "oidc", "rbac", "policy", "guard")):
+            if any(part in f.lower() for part in ("auth", "session", "jwt", "oauth", "oidc")):
+                app["authentication"].append(f)
+            if any(part in f.lower() for part in ("rbac", "policy", "guard", "permission", "role")):
+                app["authorization"].append(f)
     return {"application": {k: sorted(set(v)) if isinstance(v, list) else v for k, v in app.items()}}
 
 

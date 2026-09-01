@@ -10,29 +10,88 @@ for repository security assessment, SAST, secrets scanning, dependency or
 container analysis, SBOM, local DAST/API fuzzing, resilience tests, release
 security gates, or a SpecMaster remediation roadmap.
 
-## Operating Contract
+## Non-Negotiable Operating Contract
 
 Aegis identifies, proves, prioritizes, and recommends. It does not remediate
 application code unless the user explicitly delegates implementation.
 
-Always keep the work governed:
+The model must not replace deterministic harness steps with unaudited
+reasoning. The model may interpret normalized artifacts, but tool execution,
+discovery, target validation, scoring, release gating, and report generation
+must be delegated to scripts whenever the scripts exist.
 
-- Read `constitution.md` and the policies under `policies/` before running
-  active, load, interception, or network-affecting checks.
-- Public URLs found in configuration are evidence, not authorization.
-- Default scope is local-only: localhost, loopback, Docker, and explicitly
-  authorized private sandbox targets.
-- Do not run active DAST, interception, failure injection, or load testing
-  against production or public targets without explicit target authorization,
-  profile selection, and bounded execution.
-- Redact secrets, tokens, passwords, and private keys from reports.
-- Prefer existing project test/build commands when validating remediation
-  plans; do not invent quality gates.
+## Required Preflight
 
-## Workflow
+Before any assessment action, do this in order:
 
-Follow this pipeline, skipping unavailable tools gracefully while recording the
-skip reason:
+1. Resolve the canonical engine path. Prefer the repo-local
+   `.agent/skills/aegis-security/`; if absent use `~/.aegis-security-engine/`.
+2. Read `constitution.md`.
+3. Read all YAML files in `policies/`.
+4. Run `scripts/doctor.py` and record available/unavailable tools.
+5. Run discovery through `scripts/scan.py` or the core `discover` command
+   before making claims about the platform.
+6. Choose the least aggressive profile that satisfies the user request.
+   Default to `quick`.
+7. If the chosen profile is `adversarial-local`, `resilience`, or `full`,
+   require explicit target, explicit authorization, and bounded execution.
+8. If target validation denies the target, stop. Do not work around it.
+
+## Deterministic-First Rule
+
+Use scripts instead of free-form reasoning whenever possible:
+
+```bash
+python3 <engine>/scripts/doctor.py
+python3 <engine>/scripts/scan.py --project <project> --profile <profile>
+python3 <engine>/scripts/normalize.py --raw-dir <project>/.aegis-security/raw
+python3 <engine>/scripts/report.py <project>
+python3 <engine>/scripts/cleanup.py <project>
+```
+
+Allowed model reasoning:
+
+- explain what the script outputs mean;
+- identify uncertainty and missing evidence;
+- draft remediation guidance from normalized findings;
+- route to specific knowledge/tool references after discovery.
+
+Disallowed model reasoning:
+
+- invent findings not supported by code, config, or tool output;
+- assume framework, auth model, exposed endpoint, data store, or deployment
+  topology without discovery evidence;
+- manually compute release gates when `assessment.json` exists;
+- report raw secrets or credentials;
+- run active scans, load tests, interception, or failure injection because a
+  public URL appears in code or config.
+
+## Platform Recognition
+
+The platform must be recognized from evidence, not guessed. Use discovery
+output fields from `discovery.json`:
+
+- `languages`: package and build markers such as `package.json`,
+  `pyproject.toml`, `go.mod`, `pom.xml`, `build.gradle`, `Cargo.toml`.
+- `frameworks`: dependency evidence such as React, Next.js, Express, NestJS,
+  Vue, Fastify, Spring, Django, Flask, Rails, Laravel, or equivalent markers.
+- `package_managers`: lockfiles and manifest files.
+- `interfaces`: OpenAPI/Swagger, route files, app configs, GraphQL schemas,
+  gRPC/protobuf files, public controllers, CLI entrypoints.
+- `containers` and `compose`: Dockerfile and Compose evidence.
+- `ci_cd`: GitHub Actions, GitLab CI, Azure Pipelines, or similar.
+- `infrastructure_as_code`: Terraform, Kubernetes, Helm, CloudFormation,
+  Pulumi, Serverless, or deployment manifests.
+- `authentication` and `authorization`: only mark when there are concrete
+  libraries, middleware, policy files, route guards, annotations, or config.
+
+When discovery is incomplete, say `unknown` or `not detected`; do not fill
+the gap with generic web-app assumptions.
+
+## Mandatory Workflow
+
+Follow this pipeline exactly, skipping unavailable tools only after
+`doctor.py` or the relevant command records the skip reason:
 
 ```text
 DISCOVERY -> TARGET VALIDATION -> THREAT MODEL -> STATIC ANALYSIS
@@ -42,8 +101,12 @@ DISCOVERY -> TARGET VALIDATION -> THREAT MODEL -> STATIC ANALYSIS
 -> SECURITY SCORE -> RELEASE GATE -> REPORT -> SPECMASTER ROADMAP
 ```
 
-Use `scripts/doctor.py` to inspect local tool availability and
-`scripts/scan.py` to run the harness:
+For the full procedure, read
+`references/assessment-protocol.md` before assessing a real project. That
+reference is mandatory for any task that asks to analyze, assess, scan, audit,
+test, score, gate, or generate a security roadmap.
+
+## Invocation
 
 ```bash
 python3 .agent/skills/aegis-security/scripts/doctor.py
@@ -62,15 +125,22 @@ Outputs are written under `.aegis-security/` in the assessed project:
 
 ## Profiles
 
-- `quick`: Semgrep, Gitleaks, Trivy, Syft, Grype.
+- `quick`: Semgrep, Gitleaks, Trivy, Syft, Grype. Use for default repo review,
+  PR security check, pre-release static review, and first-pass roadmap.
 - `standard`: `quick` plus ZAP baseline/passive and Schemathesis when an
-  OpenAPI document is discovered or supplied.
+  OpenAPI document is discovered or supplied. Use only when a local target or
+  API contract is available.
 - `adversarial-local`: `standard` plus active local ZAP, mitmproxy review
-  guidance, and negative auth/security checks. Requires explicit target.
-- `resilience`: `standard` plus k6 and Toxiproxy. Requires explicit target
-  and bounded execution.
-- `full`: all allowed stages. Requires explicit approval for aggressive
-  stages.
+  guidance, and negative auth/security checks. Requires explicit authorized
+  local/private target and bounded execution.
+- `resilience`: `standard` plus k6 and Toxiproxy. Requires explicit target,
+  bounded duration, VU limits, and cleanup.
+- `full`: all allowed stages. Requires explicit approval for each aggressive
+  category that will run.
+
+If the user requests "complete", "deep", "full", "pentest", or similar,
+map it to the safest profile that can run under the policies. Never expand
+scope to public or production targets on wording alone.
 
 ## Result Interpretation
 
@@ -86,3 +156,18 @@ exposure, or unsafe deserialization.
 
 When a roadmap is needed for SpecMaster, write implementation-ready remediation
 items to `specmaster-remediation.md` and keep them separate from raw evidence.
+
+## Required Final Response
+
+When reporting back to the user, include:
+
+- assessed project path;
+- profile used;
+- target validation result;
+- tools completed, skipped, failed, or manual;
+- security score and release gate from `assessment.json`;
+- locations of `security-assessment.md` and `specmaster-remediation.md`;
+- explicit statement of test coverage limits caused by unavailable tools.
+
+Do not paste raw tool JSON into chat unless the user asks for it. Summarize
+normalized findings by ID and severity.

@@ -39,6 +39,10 @@ Discovery -> Target validation -> Threat model -> SAST/secrets/SCA/SBOM
 -> Correlation -> Score -> Release gate -> Report -> SpecMaster roadmap
 ```
 
+O agente deve usar os scripts como fonte de verdade para discovery,
+normalização, score e gate. A interpretação em linguagem natural só acontece
+depois que os artefatos estruturados existem.
+
 ## Instalação Global
 
 Uma vez por máquina:
@@ -125,6 +129,7 @@ limites de execução.
 ```bash
 python3 .agent/skills/aegis-security/scripts/doctor.py
 python3 .agent/skills/aegis-security/scripts/scan.py --project . --profile quick
+python3 -m unittest discover -s .agent/skills/aegis-security/tests -v
 ```
 
 O harness degrada com segurança quando uma ferramenta não está instalada,
