@@ -1,0 +1,41 @@
+tools:
+  semgrep:
+    category: sast
+    command: semgrep
+    allowed_profiles: [quick, standard, adversarial-local, resilience, full]
+  gitleaks:
+    category: secrets
+    command: gitleaks
+    allowed_profiles: [quick, standard, adversarial-local, resilience, full]
+  trivy:
+    category: vulnerabilities-iac-containers-secrets
+    command: trivy
+    allowed_profiles: [quick, standard, adversarial-local, resilience, full]
+  syft:
+    category: sbom
+    command: syft
+    allowed_profiles: [quick, standard, adversarial-local, resilience, full]
+  grype:
+    category: sca
+    command: grype
+    allowed_profiles: [quick, standard, adversarial-local, resilience, full]
+  zap:
+    category: dast
+    command: zap-baseline.py
+    allowed_profiles: [standard, adversarial-local, full]
+  schemathesis:
+    category: api-fuzzing
+    command: schemathesis
+    allowed_profiles: [standard, adversarial-local, full]
+  mitmproxy:
+    category: interception
+    command: mitmproxy
+    allowed_profiles: [adversarial-local, full]
+  k6:
+    category: load
+    command: k6
+    allowed_profiles: [resilience, full]
+  toxiproxy:
+    category: resilience
+    command: toxiproxy-cli
+    allowed_profiles: [resilience, full]

@@ -1,0 +1,4 @@
+.aegis-security/
+__pycache__/
+*.pyc
+.DS_Store

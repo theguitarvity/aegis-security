@@ -1,0 +1,29 @@
+profiles:
+  quick:
+    tools: [semgrep, gitleaks, trivy, syft, grype]
+    aggressive: false
+  standard:
+    extends: quick
+    tools: [zap-baseline, schemathesis]
+    aggressive: false
+  adversarial-local:
+    extends: standard
+    tools: [zap-active, mitmproxy]
+    aggressive: true
+    requires: [explicit_profile, explicit_authorized_target, bounded_execution]
+  resilience:
+    extends: standard
+    tools: [k6, toxiproxy]
+    aggressive: true
+    requires: [explicit_profile, explicit_authorized_target, bounded_execution]
+  full:
+    extends: [quick, standard, adversarial-local, resilience]
+    aggressive: true
+    requires: [explicit_profile, explicit_authorized_target, bounded_execution]
+
+timeouts:
+  tool_seconds: 900
+  full_profile_seconds: 3600
+
+destructive_operations:
+  default: deny

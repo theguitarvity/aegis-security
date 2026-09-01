@@ -1,0 +1,33 @@
+target_policy:
+  default_scope: local-only
+  allowed:
+    - localhost
+    - 127.0.0.1
+    - ::1
+    - host.docker.internal
+    - docker-network
+    - private-sandbox
+  public_targets:
+    default: deny
+  production:
+    active_scanning: deny
+    load_testing: deny
+    interception: deny
+aggressive_operations:
+  default: deny
+  require:
+    - explicit_profile
+    - explicit_authorized_target
+    - bounded_execution
+load_testing:
+  max_duration_seconds: 300
+  max_virtual_users: 500
+  emergency_stop:
+    error_rate_percent: 25
+    cpu_percent: 95
+secrets:
+  redact_in_reports: true
+evidence:
+  redact_tokens: true
+  redact_passwords: true
+  redact_private_keys: true

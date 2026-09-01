@@ -1,0 +1,11 @@
+severity_order: [critical, high, medium, low, info]
+defaults:
+  unknown_tool_severity: medium
+  runtime_reproduction_bonus: one_level
+  public_exposure_bonus: one_level
+  secret_material: critical
+confidence:
+  static_only: medium
+  runtime_reproduced: high
+  dependency_database_match: medium
+  multiple_sources: high

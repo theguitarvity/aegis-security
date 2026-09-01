@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Aegis Remediation","type":"object","properties":{"finding_id":{"type":"string"},"priority":{"type":"string"},"tasks":{"type":"array"},"validation":{"type":"array"}}}

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Aegis Attack Chain","type":"object","properties":{"id":{"type":"string"},"findings":{"type":"array"},"narrative":{"type":"string"},"preconditions":{"type":"array"},"impact":{"type":"string"}}}

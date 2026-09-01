@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Aegis Roadmap","type":"object","properties":{"release_gate":{"type":"string"},"items":{"type":"array"},"specmaster_context":{"type":"object"}}}

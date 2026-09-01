@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aegis Finding",
+  "type": "object",
+  "required": ["id", "fingerprint", "title", "severity", "confidence", "source", "classification", "component", "evidence", "risk", "remediation", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "fingerprint": {"type": "string"},
+    "title": {"type": "string"},
+    "description": {"type": "string"},
+    "severity": {"enum": ["critical", "high", "medium", "low", "info"]},
+    "confidence": {"enum": ["high", "medium", "low"]},
+    "source": {"type": "object"},
+    "classification": {"type": "object"},
+    "component": {"type": "object"},
+    "evidence": {"type": "array"},
+    "risk": {"type": "object"},
+    "remediation": {"type": "object"},
+    "status": {"enum": ["open", "accepted", "fixed", "false-positive"]}
+  }
+}

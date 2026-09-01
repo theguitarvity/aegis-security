@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"Aegis Assessment","type":"object","required":["score","gate","severity_counts","tool_runs"],"properties":{"score":{"type":"integer"},"gate":{"enum":["pass","warn","fail"]},"severity_counts":{"type":"object"},"tool_runs":{"type":"array"}}}
